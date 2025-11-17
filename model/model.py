@@ -63,13 +63,13 @@ class Model:
 
     def __ricorsione(self, sequenza_parziale, giorno, ultimo_impianto, costo_corrente, consumi_settimana):
         """ Implementa la ricorsione """
-        if giorno == 8:
+        if giorno == 8: #condizione terminale : stoppa la ricorsione
             if costo_corrente < self.__costo_ottimo or self.__costo_ottimo == -1:
                 self.__costo_ottimo = costo_corrente
                 self.__sequenza_ottima = list(sequenza_parziale)
             return
 
-        if costo_corrente >= self.__costo_ottimo != -1:
+        if costo_corrente >= self.__costo_ottimo != -1:# pruning : elimino le strade non ottimizzate
             return
 
         possibili_impianti = list(consumi_settimana.keys())
@@ -80,7 +80,7 @@ class Model:
                 costo_spostamento = 5
             kwh_giorno = consumi_settimana[impianto_id][giorno -1]
             nuovo_costo= costo_corrente + kwh_giorno + costo_spostamento
-            sequenza_parziale.append(impianto_id)
+            sequenza_parziale.append(impianto_id) #backtracking: aggiungo il mio elemento alla lista, scendo di livello ed elimino la scelta appena fatta
             self.__ricorsione(sequenza_parziale,giorno + 1, impianto_id, nuovo_costo, consumi_settimana)
             sequenza_parziale.pop()
 
