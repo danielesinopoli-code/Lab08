@@ -25,7 +25,24 @@ class Model:
         :param mese: Mese selezionato (un intero da 1 a 12)
         :return: lista di tuple --> (nome dell'impianto, media), es. (Impianto A, 123)
         """
-        # TODO
+        risultati = []
+        for impianti in self._impianti:
+            consumi= impianti.get_consumi()
+            consumi_mese = []
+            for consumo in consumi:
+                if consumo.data.month == mese and consumo.data.year == 2026:
+                    consumi_mese.append(consumo.kwh)
+            if len(consumi_mese) > 0:
+                media = sum(consumi_mese) / len(consumi_mese)
+                risultati.append((impianti.nome, media))
+            else:
+                risultati.append((impianti.nome, 0))
+        return risultati
+
+
+
+
+
 
     def get_sequenza_ottima(self, mese:int):
         """
@@ -46,12 +63,48 @@ class Model:
 
     def __ricorsione(self, sequenza_parziale, giorno, ultimo_impianto, costo_corrente, consumi_settimana):
         """ Implementa la ricorsione """
-        # TODO
+        if giorno == 8:
+            if costo_corrente < self.__costo_ottimo or self.__costo_ottimo == -1:
+                self.__costo_ottimo = costo_corrente
+                self.__sequenza_ottima = list(sequenza_parziale)
+            return
+
+        if costo_corrente >= self.__costo_ottimo != -1:
+            return
+
+        possibili_impianti = list(consumi_settimana.keys())
+
+        for impianto_id in possibili_impianti:
+            costo_spostamento = 0
+            if ultimo_impianto is not None and impianto_id != ultimo_impianto:
+                costo_spostamento = 5
+            kwh_giorno = consumi_settimana[impianto_id][giorno -1]
+            nuovo_costo= costo_corrente + kwh_giorno + costo_spostamento
+            sequenza_parziale.append(impianto_id)
+            self.__ricorsione(sequenza_parziale,giorno + 1, impianto_id, nuovo_costo, consumi_settimana)
+            sequenza_parziale.pop()
+
 
     def __get_consumi_prima_settimana_mese(self, mese: int):
         """
         Restituisce i consumi dei primi 7 giorni del mese selezionato per ciascun impianto.
         :return: un dizionario: {id_impianto: [kwh_giorno1, ..., kwh_giorno7]}
         """
-        # TODO
+        dati_settimana = {}
+
+        for impianto in self._impianti:
+            tutti_consumi= impianto.get_consumi()
+
+            consumi_filtrati =[]
+            for consumi in tutti_consumi:
+                if  consumi.data.year == 2026 and consumi.data.month == mese and consumi.data.day <=7:
+                    consumi_filtrati.append(consumi)
+
+            consumi_filtrati.sort(key=lambda x: x.data)
+            lista_KWh= []
+            for consumi in consumi_filtrati:
+                lista_KWh.append(consumi.kwh)
+            dati_settimana[impianto.id] = lista_KWh
+
+        return dati_settimana
 
